@@ -1,0 +1,70 @@
+import java.io.IOException;
+
+import org.apache.hadoop.conf.Configuration;
+import org.apache.hadoop.fs.Path;
+import org.apache.hadoop.io.IntWritable;
+import org.apache.hadoop.io.LongWritable;
+import org.apache.hadoop.io.Text;
+import org.apache.hadoop.mapreduce.lib.output.FileOutputFormat;
+import org.apache.hadoop.mapreduce.Job;
+import org.apache.hadoop.mapreduce.Mapper;
+import org.apache.hadoop.mapreduce.Reducer;
+import org.apache.hadoop.mapreduce.lib.input.FileInputFormat;
+
+public class WordCount {
+	
+	public static void main(String[] args) throws IOException, ClassNotFoundException, InterruptedException {
+		Configuration conf = new Configuration();
+		Job job = Job.getInstance(conf);
+		job.setJarByClass(WordCount.class);
+		job.setMapperClass(Map.class);
+		job.setReducerClass(Reduce.class);
+		job.setMapOutputKeyClass(Text.class);
+		job.setMapOutputValueClass(IntWritable.class);
+		job.setOutputKeyClass(Text.class);
+		job.setOutputValueClass(IntWritable.class);
+		FileInputFormat.setInputPaths(job, new Path("D:/test/a.txt"));
+		FileOutputFormat.setOutputPath(job, new Path("D:/aaaaa"));
+		boolean f = job.waitForCompletion(true);
+		System.exit(f?0:1);
+				
+	}
+	
+	public static class Map extends Mapper<LongWritable,Text,Text,IntWritable>{
+		
+		protected void map(LongWritable key,Text value,Context context) throws IOException, InterruptedException{
+			
+			   String[] arg = value.toString().split(",");
+			   for (String a : arg){
+				   context.write(new Text(a),new IntWritable(1));
+			   }
+			
+			
+			
+			
+		}
+		
+		
+	}
+public static class Reduce extends Reducer<Text,IntWritable,Text,IntWritable>{
+		
+		protected void reduce(Text key,Iterable<IntWritable> value,Context context) throws IOException, InterruptedException{
+			
+			int sum =0;
+			for(IntWritable t : value){
+				
+				sum+=t.get();
+				
+			}
+			
+			context.write(key,new IntWritable(sum) );
+			
+			
+			
+		}
+		
+		
+	}
+	
+
+}
